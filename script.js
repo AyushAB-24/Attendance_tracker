@@ -792,10 +792,16 @@ function handleScroll() {
 }
 
 // Show snackbar notification
+// Update showSnackbar function to handle dismiss
 function showSnackbar(message) {
     const snackbar = document.getElementById('snackbar');
-    snackbar.textContent = message;
+    snackbar.innerHTML = `${message} <button class="dismiss-btn">Dismiss</button>`;
     snackbar.classList.add('show');
+    
+    const dismissBtn = snackbar.querySelector('.dismiss-btn');
+    dismissBtn.addEventListener('click', () => {
+        snackbar.classList.remove('show');
+    });
     
     setTimeout(() => {
         snackbar.classList.remove('show');
