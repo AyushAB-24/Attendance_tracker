@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Attendance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6c5ce7">
+</head>
+<body>
+    <!-- App Header -->
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1 class="app-title">Attendance Tracker</h1>
+            </div>
+            <div class="header-right">
+                <button class="settings-btn ripple" onclick="openModal('settings')">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-content" id="app-content">
+        <div class="welcome-banner">
+            <div class="welcome-text">
+                <h2>Welcome!</h2>
+                <p>Track your attendance and stay on top of your classes</p>
+            </div>
+            <div class="welcome-illustration">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+        </div>
+
+        <div class="section-header">
+            <h3>Your Subjects</h3>
+            <button class="btn-add ripple" onclick="openModal('add-subject')">
+                <i class="fas fa-plus"></i> Add
+            </button>
+        </div>
+
+        <div class="subjects-list" id="subjects"></div>
+    </main>
+
+    <!-- Floating Action Button -->
+    <div class="floating-action-btn ripple" id="fab" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- Snackbar for notifications -->
+    <div class="snackbar" id="snackbar"></div>
+
+    <!-- Calendar Modal -->
+    <div class="modal-overlay" id="calendar-overlay"></div>
+    <div class="modal" id="calendar-modal">
+        <div class="modal-header">
+            <h2 class="modal-title" id="calendar-title">Attendance</h2>
+            <button class="close-btn ripple" onclick="closeModal('calendar')">&times;</button>
+        </div>
+        <div id="calendar-content"></div>
+    </div>
+    
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="edit-overlay"></div>
+    <div class="modal" id="edit-modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Rename Subject</h2>
+            <button class="close-btn ripple" onclick="closeModal('edit')">&times;</button>
+        </div>
+        <input type="text" class="edit-input" id="edit-subject-input" placeholder="Subject name">
+        <div class="modal-actions">
+            <button class="btn-cancel ripple" onclick="closeModal('edit')">
+                Cancel
+            </button>
+            <button class="btn-save ripple" onclick="saveSubjectName()">
+                Save
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="modal-overlay" id="add-subject-overlay"></div>
+    <div class="modal" id="add-subject-modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Add New Subject</h2>
+            <button class="close-btn ripple" onclick="closeModal('add-subject')">&times;</button>
+        </div>
+        <input type="text" class="edit-input" id="new-subject-input" placeholder="Enter subject name">
+        <div class="modal-actions">
+            <button class="btn-cancel ripple" onclick="closeModal('add-subject')">
+                Cancel
+            </button>
+            <button class="btn-save ripple" onclick="addNewSubject()">
+                Add Subject
+            </button>
+        </div>
+    </div>
+
+    <!-- Delete Subject Modal -->
+    <div class="modal-overlay" id="delete-subject-overlay"></div>
+    <div class="modal" id="delete-subject-modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Remove Subject</h2>
+            <button class="close-btn ripple" onclick="closeModal('delete-subject')">&times;</button>
+        </div>
+        <div class="modal-content">
+            <p>Select subject to remove:</p>
+            <div id="subject-list-to-delete" class="delete-list"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel ripple" onclick="closeModal('delete-subject')">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-overlay"></div>
+    <div class="modal" id="settings-modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Settings</h2>
+            <button class="close-btn ripple" onclick="closeModal('settings')">&times;</button>
+        </div>
+        <div class="settings-list">
+            <div class="settings-item ripple" onclick="openModalFromSettings('add-subject')">
+                <div class="settings-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div class="settings-text">
+                    <span>Add New Subject</span>
+                    <small>Create a new subject to track</small>
+                </div>
+            </div>
+            <div class="settings-item ripple" onclick="openModalFromSettings('delete-subject')">
+                <div class="settings-icon">
+                    <i class="fas fa-trash"></i>
+                </div>
+                <div class="settings-text">
+                    <span>Remove Subject</span>
+                    <small>Delete a subject and its data</small>
+                </div>
+            </div>
+            <div class="settings-item ripple" onclick="exportData()">
+                <div class="settings-icon">
+                    <i class="fas fa-file-export"></i>
+                </div>
+                <div class="settings-text">
+                    <span>Export Data</span>
+                    <small>Save your attendance records</small>
+                </div>
+            </div>
+            <div class="settings-item ripple" onclick="resetApp()">
+                <div class="settings-icon">
+                    <i class="fas fa-trash-restore"></i>
+                </div>
+                <div class="settings-text">
+                    <span>Reset App</span>
+                    <small>Clear all data and start fresh</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview Modal -->
+    <div class="modal-overlay" id="stats-overlay"></div>
+    <div class="modal" id="stats-modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Attendance Overview</h2>
+            <button class="close-btn ripple" onclick="closeModal('stats')">&times;</button>
+        </div>
+        <div class="stats-content">
+            <div class="stats-chart" id="stats-chart">
+                <canvas id="attendance-chart"></canvas>
+            </div>
+            <div class="stats-summary">
+                <div class="summary-item">
+                    <span class="summary-label">Overall Attendance</span>
+                    <span class="summary-value" id="overall-percentage">0%</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Best Subject</span>
+                    <span class="summary-value" id="best-subject">-</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Needs Improvement</span>
+                    <span class="summary-value" id="worst-subject">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
