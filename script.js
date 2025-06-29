@@ -67,6 +67,7 @@ function saveData() {
     localStorage.setItem('calendarData', JSON.stringify(calendar));
     localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
 }
+
 // Generate calendar HTML for a subject
 function generateCalendar(subject) {
     currentCalendarSubject = subject;
@@ -740,22 +741,41 @@ function updateStatsSummary() {
     document.getElementById('worst-subject').textContent = worstSubject ? `${worstSubject} (${worstPercentage.toFixed(1)}%)` : '-';
 }
 
-// Export data function
+// Enhanced Export data function
 function exportData() {
-    const data = {
-        subjects: subjects,
-        attendance: attendance,
-        calendar: calendar,
-        records: attendanceRecords
+    const exportData = {
+        metadata: {
+            appName: "Attendance Tracker",
+            exportDate: new Date().toISOString(),
+            version: "1.0"
+        },
+        subjects: subjects.map(subject => ({
+            name: subject,
+            attended: attendance[subject].attended,
+            absent: attendance[subject].total - attendance[subject].attended,
+            total: attendance[subject].total,
+            percentage: attendance[subject].total > 0 ? 
+                (attendance[subject].attended / attendance[subject].total * 100).toFixed(1) + '%' : '0%',
+            records: attendanceRecords[subject]
+        })),
+        summary: {
+            totalSubjects: subjects.length,
+            totalClasses: Object.values(attendance).reduce((sum, sub) => sum + sub.total, 0),
+            totalPresent: Object.values(attendance).reduce((sum, sub) => sum + sub.attended, 0),
+            totalAbsent: Object.values(attendance).reduce((sum, sub) => sum + (sub.total - sub.attended), 0),
+            overallPercentage: Object.values(attendance).reduce((sum, sub) => sum + sub.total, 0) > 0 ?
+                (Object.values(attendance).reduce((sum, sub) => sum + sub.attended, 0) / 
+                 Object.values(attendance).reduce((sum, sub) => sum + sub.total, 0) * 100).toFixed(1) + '%' : '0%'
+        }
     };
     
-    const dataStr = JSON.stringify(data, null, 2);
+    const dataStr = JSON.stringify(exportData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     
     const a = document.createElement('a');
     a.href = url;
-    a.download = `attendancetracker-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `attendance-tracker-export-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -792,16 +812,10 @@ function handleScroll() {
 }
 
 // Show snackbar notification
-// Update showSnackbar function to handle dismiss
 function showSnackbar(message) {
     const snackbar = document.getElementById('snackbar');
-    snackbar.innerHTML = `${message} <button class="dismiss-btn">Dismiss</button>`;
+    snackbar.innerHTML = `${message} <button class="dismiss-btn" onclick="this.parentElement.classList.remove('show')">Dismiss</button>`;
     snackbar.classList.add('show');
-    
-    const dismissBtn = snackbar.querySelector('.dismiss-btn');
-    dismissBtn.addEventListener('click', () => {
-        snackbar.classList.remove('show');
-    });
     
     setTimeout(() => {
         snackbar.classList.remove('show');
